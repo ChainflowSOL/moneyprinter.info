@@ -10,7 +10,7 @@ interface RowProps {
 
 const toggle = (isOpen: boolean) => !isOpen;
 
-const cardHeight = 600;
+const cardHeight = 5000;
 
 const Row: React.FC<RowProps> = ({ protocol }) => {
   const plausible = usePlausible();
@@ -99,27 +99,31 @@ const Row: React.FC<RowProps> = ({ protocol }) => {
         @keyframes slidein {
           from {
             max-height: 0px;
+            opacity: 0;
           }
 
           to {
             max-height: ${cardHeight}px;
+            opacity: 1;
           }
         }
 
         @keyframes slideout {
           from {
             max-height: ${cardHeight}px;
+            opacity: 1;
           }
 
           to {
             max-height: 0px;
+            opacity: 0;
           }
         }
 
         .details-container {
-          max-height: ${cardHeight}px;
+          max-height: none;
           animation: 0.5s 1 slidein;
-          overflow: hidden;
+          overflow: visible;
 
           border-top: solid 1px #e3e3e3;
           border-bottom: solid 1px #e3e3e3;
@@ -129,6 +133,7 @@ const Row: React.FC<RowProps> = ({ protocol }) => {
 
         .details-container.exit {
           max-height: 0;
+          overflow: hidden;
           animation: 0.5s 1 slideout;
         }
 
