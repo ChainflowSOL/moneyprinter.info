@@ -6,7 +6,7 @@ interface ListProps {
 }
 
 const List: React.FC<ListProps> = ({ data }) => {
-  console.log(data)
+  // console.log(data)
   return (
     <div className="list">
       <div className="header">

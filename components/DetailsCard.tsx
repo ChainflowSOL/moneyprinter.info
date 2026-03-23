@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Attribute from './Attribute';
 
+interface ValidatorInfo {
+  pubkey: string;
+  moniker: string;
+  stake_sol: number;
+}
+
 interface EntityDetail {
   rank: number;
   name: string;
@@ -10,7 +16,131 @@ interface EntityDetail {
   commission: number;
   skip_rate: number;
   is_verified: boolean;
+  is_hardcoded: boolean;
+  validators: ValidatorInfo[];
 }
+
+const EntityRow: React.FC<{ entity: EntityDetail }> = ({ entity }) => {
+  const [expanded, setExpanded] = useState(false);
+  const canExpand = !entity.is_hardcoded && entity.validators && entity.validators.length > 1;
+
+  return (
+    <>
+      <tr
+        className={canExpand ? 'expandable' : ''}
+        onClick={() => canExpand && setExpanded(!expanded)}
+      >
+        <td className="col-rank">{entity.rank}</td>
+        <td className="col-name">
+          {canExpand && (
+            <span className="expand-icon">{expanded ? '▾' : '▸'}</span>
+          )}
+          {entity.name}
+          {canExpand && (
+            <span className="validator-count">{entity.validators.length} validators</span>
+          )}
+        </td>
+        <td className="col-num">{(entity.stake_sol / 1e6).toFixed(2)}M</td>
+        <td className="col-num">{entity.percent.toFixed(2)}%</td>
+        <td className="col-num">{entity.cumulative.toFixed(2)}%</td>
+      </tr>
+      {expanded && entity.validators.map((v, idx) => (
+        <tr key={idx} className="validator-row">
+          <td className="col-rank"></td>
+          <td className="col-name validator-detail">
+            <div className="validator-moniker">{v.moniker || '—'}</div>
+            <div
+              className="validator-pubkey"
+              // title={`copy!`}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(v.pubkey);
+                const el = e.currentTarget;
+                const orig = el.textContent;
+                el.textContent = 'Copied!';
+                setTimeout(() => { el.textContent = orig; }, 1500);
+              }}
+            >
+              {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-6)}
+            </div>
+          </td>
+          <td className="col-num validator-stake">{(v.stake_sol / 1e6).toFixed(4)}M</td>
+          <td className="col-num"></td>
+          <td className="col-num"></td>
+        </tr>
+      ))}
+      <style jsx>{`
+        tr.expandable {
+          cursor: pointer;
+        }
+        tr.expandable:hover {
+          background: #f0f4ff;
+        }
+        .expand-icon {
+          display: inline-block;
+          width: 16px;
+          font-size: 11px;
+          color: #4a6cf7;
+        }
+        .col-rank {
+          width: 40px;
+          text-align: center;
+        }
+        .col-name {
+          text-align: left;
+        }
+        .col-num {
+          width: 110px;
+          text-align: right;
+          font-family: 'Noto Sans TC', monospace;
+          white-space: nowrap;
+        }
+        .verified {
+          margin-left: 4px;
+          font-size: 12px;
+        }
+        .validator-count {
+          margin-left: 6px;
+          font-size: 11px;
+          color: #888;
+          background: #f0f0f0;
+          padding: 1px 6px;
+          border-radius: 8px;
+        }
+        .validator-row {
+          background: #f8f9fc;
+        }
+        .validator-row:hover {
+          background: #f0f2f8;
+        }
+        .validator-detail {
+          padding-left: 28px !important;
+        }
+        .validator-moniker {
+          font-size: 13px;
+          color: #333;
+          font-weight: 500;
+        }
+        .validator-pubkey {
+          font-size: 12px;
+          color: #666;
+          font-family: 'Courier New', monospace;
+          cursor: pointer;
+          display: inline-block;
+        }
+        .validator-stake {
+          font-size: 13px;
+          color: #444;
+        }
+        td {
+          padding: 6px 12px;
+          border-bottom: 1px solid #eee;
+          color: #444;
+        }
+      `}</style>
+    </>
+  );
+};
 
 const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
   const [entities, setEntities] = useState<EntityDetail[]>([]);
@@ -36,14 +166,16 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
 
   const superminority = entities.filter((e, idx) => {
     if (e.cumulative <= 33.33) return true;
-    // include the entity that crosses the threshold
     if (idx > 0 && entities[idx - 1].cumulative <= 33.33) return true;
     return false;
   });
 
   return (
     <div className="entity-table-wrapper">
-      <div className="table-title">Superminority Entities ({superminority.length} entities controlling 33% of stake)</div>
+      <div className="table-title">
+        Superminority Entities ({superminority.length} entities controlling 33% of stake)
+      </div>
+      <div className="table-hint">Click an entity with multiple validators to expand the breakdown</div>
       <div className="table-scroll">
         <table className="entity-table">
           <thead>
@@ -57,23 +189,12 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           </thead>
           <tbody>
             {superminority.map((e) => (
-              <tr key={e.rank}>
-                <td className="col-rank">{e.rank}</td>
-                <td className="col-name">
-                  {e.name}
-                  {e.is_verified && <span className="verified" title="Manually verified entity">✅</span>}
-                </td>
-                <td className="col-num">{(e.stake_sol / 1e6).toFixed(2)}M</td>
-                <td className="col-num">{e.percent.toFixed(2)}%</td>
-                <td className="col-num">{e.cumulative.toFixed(2)}%</td>
-              </tr>
+              <EntityRow key={e.rank} entity={e} />
             ))}
           </tbody>
         </table>
       </div>
-      <div className="table-legend">
-        <span className="legend-item"><span className="verified">✅</span> Manually verified entity</span>
-      </div>
+
 
       <style jsx>{`
         .entity-table-wrapper {
@@ -83,6 +204,11 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           font-weight: 600;
           font-size: 14px;
           color: #1a1a2e;
+          margin-bottom: 4px;
+        }
+        .table-hint {
+          font-size: 12px;
+          color: #888;
           margin-bottom: 8px;
         }
         .table-scroll {
@@ -104,14 +230,6 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           border-bottom: 2px solid #ccc;
           white-space: nowrap;
         }
-        .entity-table td {
-          padding: 6px 12px;
-          border-bottom: 1px solid #eee;
-          color: #444;
-        }
-        .entity-table tbody tr:hover {
-          background: #f8f9fc;
-        }
         .col-rank {
           width: 40px;
           text-align: center;
@@ -129,7 +247,6 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           text-align: right;
         }
         .verified {
-          margin-left: 4px;
           font-size: 12px;
         }
         .table-legend {
@@ -138,11 +255,19 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
           font-size: 12px;
           color: #666;
           margin-top: 6px;
+          flex-wrap: wrap;
         }
         .legend-item {
           display: flex;
           align-items: center;
           gap: 4px;
+        }
+        .legend-badge {
+          font-size: 11px;
+          color: #888;
+          background: #f0f0f0;
+          padding: 1px 6px;
+          border-radius: 8px;
         }
         .table-status {
           font-size: 13px;
@@ -155,6 +280,52 @@ const EntityTable: React.FC<{ endpoint: string }> = ({ endpoint }) => {
 };
 
 const DetailsCard: React.FC<{ metadata: any }> = ({ metadata }) => {
+  const [entityCount, setEntityCount] = useState<number | null>(null);
+
+  // Fetch entity count for the remark text replacement
+  useEffect(() => {
+    if (metadata.entityDetailsEndpoint) {
+      fetch(metadata.entityDetailsEndpoint)
+        .then((res) => res.json())
+        .then((data) => {
+          const entities: EntityDetail[] = data.entities || [];
+          const count = entities.filter((e: EntityDetail, idx: number) => {
+            if (e.cumulative <= 33.33) return true;
+            if (idx > 0 && entities[idx - 1].cumulative <= 33.33) return true;
+            return false;
+          }).length;
+          setEntityCount(count);
+        })
+        .catch(() => {});
+    }
+  }, [metadata.entityDetailsEndpoint]);
+
+  const renderRemark = (text: string) => {
+    const replaced = entityCount !== null
+      ? text.replace('{count}', String(entityCount))
+      : text.replace('{count}', '...');
+
+    // Split on \n for paragraphs, and linkify URLs
+    const paragraphs = replaced.split('\n').filter((p) => p.trim() !== '');
+    return paragraphs.map((p, i) => {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const parts = p.split(urlRegex);
+      return (
+        <p key={i} style={{ margin: i === 0 ? 0 : '10px 0 0' }}>
+          {parts.map((part, j) =>
+            urlRegex.test(part) ? (
+              <a key={j} href={part} target="_blank" rel="noopener noreferrer" style={{ color: '#4a6cf7' }}>
+                {part}
+              </a>
+            ) : (
+              <span key={j}>{part}</span>
+            )
+          )}
+        </p>
+      );
+    });
+  };
+
   return (
     <div className="details-card">
       <div className="metadata">
@@ -177,7 +348,7 @@ const DetailsCard: React.FC<{ metadata: any }> = ({ metadata }) => {
               <span className="remark-icon">ℹ️</span>
               <span>Why Our Number Differs From Other Trackers</span>
             </div>
-            <div className="remark-body">{metadata.remark}</div>
+            <div className="remark-body">{renderRemark(metadata.remark)}</div>
           </div>
         )}
 
