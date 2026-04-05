@@ -65,6 +65,28 @@ export const Home: () => JSX.Element = () => {
         See how resistant a chain is to censorship or collusion. Compare metrics, explore thresholds, export data.
       </p>
       <List data={sortedChains} />
+      <button
+        className="csv-btn"
+        onClick={() => {
+          const header = "Name,Current Value,Previous Value";
+          const rows = sortedChains.map((c: any) => {
+            const name = (c.results.name ?? "").replace(/,/g, "");
+            const curr = c.results.currVal ?? 0;
+            const prev = c.results.prevVal ?? 0;
+            return `${name},${curr},${prev}`;
+          });
+          const csv = [header, ...rows].join("\n");
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "nakaflow-coefficients.csv";
+          a.click();
+          URL.revokeObjectURL(url);
+        }}
+      >
+        Export CSV
+      </button>
       <div>
         <p className="contentTitle">About the Nakamoto Coefficient</p>
         <p className="content">
@@ -224,6 +246,21 @@ export const Home: () => JSX.Element = () => {
           font-size: 1.2rem;
           margin: 4px 0 20px;
           max-width: 800px;
+        }
+
+        .csv-btn {
+          margin: 12px 0 20px;
+          padding: 8px 20px;
+          font-size: 0.95rem;
+          font-family: 'sofia-pro', sans-serif;
+          background: #091636;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .csv-btn:hover {
+          background: #1a2a50;
         }
       `}</style>
     </main>
