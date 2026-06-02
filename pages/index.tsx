@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { GetStaticProps } from "next";
 import List from "components/List";
-import CHAIN_DATA, { CHAINFLOW_OPERATED } from "../components/constants";
+import CHAIN_DATA, { CHAINFLOW_OPERATED, TVL_INFO } from "../components/constants";
 
 interface ChainResult {
   id: number;
@@ -15,6 +15,7 @@ interface ChainResult {
     chainToken: string;
     chainflowOperated: boolean;
     stakingUrl: string | null;
+    tvl: number;
   };
 }
 
@@ -23,25 +24,54 @@ interface HomeProps {
   lastUpdated: string | null;
 }
 
+async function fetchDefillamaTvl(): Promise<Map<string, number>> {
+  const res = await fetch("https://api.llama.fi/v2/chains");
+  if (!res.ok) throw new Error(`DefiLlama ${res.status}`);
+  const data = await res.json();
+  const byName = new Map<string, number>();
+  for (const c of data ?? []) {
+    if (c?.name && typeof c?.tvl === "number") byName.set(c.name, c.tvl);
+  }
+  return byName;
+}
+
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
   try {
-    // const res = await fetch("http://localhost:8080/naka-coeffs");
-    const res = await fetch("https://nakaflow.io/api/naka-coeffs");
-    const r = await res.json();
+    const [coeffsRes, tvlRes] = await Promise.allSettled([
+      fetch("https://nakaflow.io/api/naka-coeffs").then((r) => r.json()),
+      fetchDefillamaTvl(),
+    ]);
 
-    const chains = (r.coefficients ?? []).map((chain: any, indx: number) => ({
-      id: indx + 1,
-      results: {
-        metadata: CHAIN_DATA?.get(chain.chain_token)?.metadata ?? null,
-        name: CHAIN_DATA?.get(chain.chain_token)?.name ?? "",
-        icon: CHAIN_DATA?.get(chain.chain_token)?.icon ?? "",
-        currVal: chain.naka_co_curr_val ?? 0,
-        prevVal: chain.naka_co_prev_val ?? 0,
-        chainToken: chain.chain_token ?? "",
-        chainflowOperated: CHAINFLOW_OPERATED.has(chain.chain_token ?? ""),
-        stakingUrl: CHAIN_DATA?.get(chain.chain_token)?.stakingUrl ?? null,
-      },
-    }));
+    if (coeffsRes.status !== "fulfilled") throw coeffsRes.reason;
+    const r = coeffsRes.value;
+    const tvlByName = tvlRes.status === "fulfilled" ? tvlRes.value : null;
+
+    const chains: ChainResult[] = (r.coefficients ?? []).map(
+      (chain: any, indx: number) => {
+        const token: string = chain.chain_token ?? "";
+        const tvlInfo = TVL_INFO.get(token);
+        const liveTvl = tvlInfo && tvlByName ? tvlByName.get(tvlInfo.slug) : undefined;
+        const tvl =
+          typeof liveTvl === "number" && liveTvl > 0
+            ? liveTvl
+            : tvlInfo?.tvlFallback ?? 0;
+
+        return {
+          id: indx + 1,
+          results: {
+            metadata: CHAIN_DATA?.get(token)?.metadata ?? null,
+            name: CHAIN_DATA?.get(token)?.name ?? "",
+            icon: CHAIN_DATA?.get(token)?.icon ?? "",
+            currVal: chain.naka_co_curr_val ?? 0,
+            prevVal: chain.naka_co_prev_val ?? 0,
+            chainToken: token,
+            chainflowOperated: CHAINFLOW_OPERATED.has(token),
+            stakingUrl: CHAIN_DATA?.get(token)?.stakingUrl ?? null,
+            tvl,
+          },
+        };
+      }
+    );
 
     let lastUpdated: string | null = null;
     if (r.last_updated) {
@@ -61,14 +91,16 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
 };
 
 const Home: React.FC<HomeProps> = ({ chains, lastUpdated }) => {
-  const byName = (a: ChainResult, b: ChainResult) =>
-    a.results.name.localeCompare(b.results.name);
+  const byTvlDesc = (a: ChainResult, b: ChainResult) => {
+    if (b.results.tvl !== a.results.tvl) return b.results.tvl - a.results.tvl;
+    return a.results.name.localeCompare(b.results.name);
+  };
   const chainflowChains = chains
     .filter((c) => c.results.chainflowOperated)
-    .sort(byName);
+    .sort(byTvlDesc);
   const otherChains = chains
     .filter((c) => !c.results.chainflowOperated)
-    .sort(byName);
+    .sort(byTvlDesc);
   const sortedChains = [...chainflowChains, ...otherChains];
 
   return (

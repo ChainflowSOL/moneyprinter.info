@@ -2,6 +2,45 @@ const CHAIN_DATA = new Map();
 
 export const CHAINFLOW_OPERATED = new Set(["SOL", "SUI", "MON", "STORY"]);
 
+// DefiLlama chain slug per chain token, with optional tvlFallback used when
+// DefiLlama is missing/under-reports TVL (e.g. new chains, non-DeFi L1s).
+// Slugs match the `name` field returned by https://api.llama.fi/v2/chains.
+export const TVL_INFO: Map<string, { slug: string; tvlFallback?: number }> = new Map([
+  ["ATOM",  { slug: "CosmosHub" }],
+  ["BNB",   { slug: "BSC" }],
+  ["BLD",   { slug: "Agoric" }],
+  ["ETH",   { slug: "Ethereum" }],
+  ["MINA",  { slug: "Mina" }],
+  ["OSMO",  { slug: "Osmosis" }],
+  ["MATIC", { slug: "Polygon" }],
+  ["REGEN", { slug: "Regen" }],
+  ["SOL",   { slug: "Solana" }],
+  ["AVAX",  { slug: "Avalanche" }],
+  ["GRT",   { slug: "The Graph" }],
+  ["RUNE",  { slug: "Thorchain" }],
+  ["NEAR",  { slug: "Near" }],
+  ["JUNO",  { slug: "Juno" }],
+  ["SUI",   { slug: "Sui" }],
+  ["HBAR",  { slug: "Hedera" }],
+  ["STARS", { slug: "Stargaze" }],
+  ["PLS",   { slug: "PulseChain" }],
+  ["TIA",   { slug: "Celestia" }],
+  ["EGLD",  { slug: "MultiversX" }],
+  ["DOT",   { slug: "Polkadot" }],
+  ["APT",   { slug: "Aptos" }],
+  ["ALGO",  { slug: "Algorand" }],
+  ["SEI",   { slug: "Sei" }],
+  ["ADA",   { slug: "Cardano" }],
+  ["XNO",   { slug: "Nano" }],
+  ["AVAIL", { slug: "Avail" }],
+  ["NAM",   { slug: "Namada" }],
+  ["MON",   { slug: "Monad", tvlFallback: 0 }],
+  ["BASE",  { slug: "Base" }],
+  ["PLUME", { slug: "Plume Mainnet" }],
+  ["HYPE",  { slug: "Hyperliquid L1" }],
+  ["STORY", { slug: "Story" }],
+]);
+
 CHAIN_DATA.set("ATOM", {
   metadata: {
     description:
@@ -97,7 +136,7 @@ CHAIN_DATA.set("SOL", {
     entityDetailsEndpoint: "https://nakaflow.io/api/solana-details",
   },
   name: "Solana",
-  stakingUrl: "https://chainflow.io/solana/",
+  stakingUrl: "https://stakewiz.com/validator/CAf8jfgqhia5VNrEF4A7Y9VLD3numMq9DVSceq7cPhNY",
   icon: "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDM5Ny43IDMxMS43Ij4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbDp1cmwoI1NWR0lEXzFfKTt9Cgkuc3Qxe2ZpbGw6dXJsKCNTVkdJRF8yXyk7fQoJLnN0MntmaWxsOnVybCgjU1ZHSURfM18pO30KPC9zdHlsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8xXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzNjAuODc5MSIgeTE9IjM1MS40NTUzIiB4Mj0iMTQxLjIxMyIgeTI9Ii02OS4yOTM2IiBncmFkaWVudFRyYW5zZm9ybT0ibWF0cml4KDEgMCAwIC0xIDAgMzE0KSI+Cgk8c3RvcCBvZmZzZXQ9IjAiIHN0eWxlPSJzdG9wLWNvbG9yOiMwMEZGQTMiLz4KCTxzdG9wIG9mZnNldD0iMSIgc3R5bGU9InN0b3AtY29sb3I6I0RDMUZGRiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNjQuNiwyMzcuOWMyLjQtMi40LDUuNy0zLjgsOS4yLTMuOGgzMTcuNGM1LjgsMCw4LjcsNyw0LjYsMTEuMWwtNjIuNyw2Mi43Yy0yLjQsMi40LTUuNywzLjgtOS4yLDMuOEg2LjUKCWMtNS44LDAtOC43LTctNC42LTExLjFMNjQuNiwyMzcuOXoiLz4KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8yXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIyNjQuODI5MSIgeTE9IjQwMS42MDE0IiB4Mj0iNDUuMTYzIiB5Mj0iLTE5LjE0NzUiIGdyYWRpZW50VHJhbnNmb3JtPSJtYXRyaXgoMSAwIDAgLTEgMCAzMTQpIj4KCTxzdG9wIG9mZnNldD0iMCIgc3R5bGU9InN0b3AtY29sb3I6IzAwRkZBMyIvPgoJPHN0b3Agb2Zmc2V0PSIxIiBzdHlsZT0ic3RvcC1jb2xvcjojREMxRkZGIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik02NC42LDMuOEM2Ny4xLDEuNCw3MC40LDAsNzMuOCwwaDMxNy40YzUuOCwwLDguNyw3LDQuNiwxMS4xbC02Mi43LDYyLjdjLTIuNCwyLjQtNS43LDMuOC05LjIsMy44SDYuNQoJYy01LjgsMC04LjctNy00LjYtMTEuMUw2NC42LDMuOHoiLz4KPGxpbmVhckdyYWRpZW50IGlkPSJTVkdJRF8zXyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIzMTIuNTQ4NCIgeTE9IjM3Ni42ODgiIHgyPSI5Mi44ODIyIiB5Mj0iLTQ0LjA2MSIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxIDAgMCAtMSAwIDMxNCkiPgoJPHN0b3Agb2Zmc2V0PSIwIiBzdHlsZT0ic3RvcC1jb2xvcjojMDBGRkEzIi8+Cgk8c3RvcCBvZmZzZXQ9IjEiIHN0eWxlPSJzdG9wLWNvbG9yOiNEQzFGRkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPHBhdGggY2xhc3M9InN0MiIgZD0iTTMzMy4xLDEyMC4xYy0yLjQtMi40LTUuNy0zLjgtOS4yLTMuOEg2LjVjLTUuOCwwLTguNyw3LTQuNiwxMS4xbDYyLjcsNjIuN2MyLjQsMi40LDUuNywzLjgsOS4yLDMuOGgzMTcuNAoJYzUuOCwwLDguNy03LDQuNi0xMS4xTDMzMy4xLDEyMC4xeiIvPgo8L3N2Zz4K",
 });
 
@@ -176,7 +215,7 @@ CHAIN_DATA.set("SUI", {
     website: "https://sui.io/",
   },
   name: "Sui",
-  stakingUrl: "https://chainflow.io/sui/",
+  stakingUrl: "https://suiscan.xyz/mainnet/validator/0xbc7e7537564bd939b62e5b24477ac00ba8cef33ccec72d63090a080a1253b725/info",
   icon: " data:image/png;base64,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",
 });
 
@@ -332,7 +371,7 @@ CHAIN_DATA.set("MON", {
     website: "https://www.monad.xyz/",
   },
   name: "Monad",
-  stakingUrl: "https://chainflow.io/monad-2/",
+  stakingUrl: "https://monadvision.com/validator/0x4CDd21dcBb1f5b02e8A1a82AE8aA2F75eec98069?ref=chainflow.io",
   icon: "data:image/png;base64,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"
 });
 
@@ -377,7 +416,7 @@ CHAIN_DATA.set("STORY", {
     website: "https://www.story.foundation/",
   },
   name: "Story Protocol",
-  stakingUrl: "https://chainflow.io/story/",
+  stakingUrl: "https://staking.story.foundation/validators/0xb4c106a8206cf8b23ab377a4e9b779fddb9d3427",
   icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iOTIiIHZpZXdCb3g9IjAgMCA3MCA5MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTY5LjUzIDYxLjE0NTJDNjkuNTMgODAuNDYwOCA1NC4wMzcyIDkyIDM0LjkyMTIgOTJDMTUuODA1MSA5MiAyLjQ5ODgzIDgwLjU4NjIgMCA2Ni4wMzY4SDE3LjYxNjhDMTkuNTUzNCA3MS41NTU2IDI1Ljg2MjkgNzUuNTY5MiAzNC45MjEyIDc1LjU2OTJDNDQuOTc5IDc1LjU2OTIgNTIuMjI1NiA3MC40ODk0IDUyLjIyNTYgNjEuNDU4OEM1Mi4yMjU2IDUyLjQyODEgNDUuMTY2NCA0Ny43ODczIDM0Ljg1ODcgNDcuNzg3M1Y2MC41MTgxQzE1LjQzMDMgNjAuNTE4MSAwLjU2MjIzNyA0OS40ODA2IDAuNTYyMjM3IDMxLjA0MjlDMC41NjIyMzcgMTIuNjA1MyAxNC44NjggMCAzNC45ODM2IDBDNTQuMDM3MiAwIDY3LjE1NjEgMTEuMzUxMSA2OC40NjggMjUuMzM2MUg1MS40NzU5QzUwLjEwMTYgMjAuMzE5IDQ0LjU0MTcgMTYuNDkzNSAzNS4zNTg1IDE2LjQ5MzVDMjQuMTc2MiAxNi40OTM1IDE3Ljk5MTYgMjEuNjk4NyAxNy45OTE2IDMwLjU0MTJDMTcuOTkxNiAzOS4zODM4IDI1LjExMzMgNDMuNjQ4MyAzNC44NTg3IDQzLjY0ODNWMzAuMjkwNEM1NS45NzM4IDMwLjI5MDQgNjkuNTMgNDIuOTU4NCA2OS41MyA2MS4xNDUyWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg=="
 });
 

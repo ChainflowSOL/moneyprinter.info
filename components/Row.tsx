@@ -12,6 +12,14 @@ const toggle = (isOpen: boolean) => !isOpen;
 
 const cardHeight = 5000;
 
+const formatTvl = (tvl: number | undefined): string => {
+  if (!tvl || tvl <= 0) return "TVL: not tracked on DefiLlama";
+  if (tvl >= 1e9) return `TVL: $${(tvl / 1e9).toFixed(2)}B`;
+  if (tvl >= 1e6) return `TVL: $${(tvl / 1e6).toFixed(2)}M`;
+  if (tvl >= 1e3) return `TVL: $${(tvl / 1e3).toFixed(1)}K`;
+  return `TVL: $${tvl.toFixed(0)}`;
+};
+
 const Row: React.FC<RowProps> = ({ protocol }) => {
   const plausible = usePlausible();
   const [open, setOpen] = useState(false);
@@ -30,8 +38,16 @@ const Row: React.FC<RowProps> = ({ protocol }) => {
             },
           });
         }}
+        aria-label={formatTvl(protocol.results.tvl)}
         className={`item ${isApp ? "app" : ""} ${open ? "open" : ""}`}
       >
+        <div className="tvl-tooltip" role="tooltip">
+          <span className="tvl-label">Total Value Locked</span>
+          <span className={`tvl-value ${(!protocol.results.tvl || protocol.results.tvl <= 0) ? "muted" : ""}`}>
+            {formatTvl(protocol.results.tvl).replace("TVL: ", "")}
+          </span>
+          <span className="tvl-source">via DefiLlama</span>
+        </div>
         {protocol.results.icon && (
           <img
             src={protocol.results.icon}
@@ -86,6 +102,75 @@ const Row: React.FC<RowProps> = ({ protocol }) => {
           text-decoration: none;
           align-items: center;
           height: 54px;
+          position: relative;
+        }
+
+        .tvl-tooltip {
+          position: absolute;
+          top: -4px;
+          left: 60px;
+          transform: translateY(-100%);
+          background: #091636;
+          color: #fff;
+          padding: 8px 12px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-family: 'sofia-pro', sans-serif;
+          white-space: nowrap;
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          z-index: 20;
+          box-shadow: 0 6px 18px rgba(9, 22, 54, 0.25);
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          line-height: 1.3;
+          transition: opacity 0.15s ease 0s, visibility 0s linear 0.15s, transform 0.2s ease 0s;
+        }
+        .tvl-tooltip::after {
+          content: '';
+          position: absolute;
+          bottom: -6px;
+          left: 18px;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid #091636;
+        }
+        .tvl-label {
+          font-size: 10px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          opacity: 0.6;
+          font-weight: 600;
+        }
+        .tvl-value {
+          font-size: 15px;
+          font-weight: 700;
+          color: #fff;
+        }
+        .tvl-value.muted {
+          color: #a3aac2;
+          font-weight: 500;
+          font-size: 13px;
+          font-style: italic;
+        }
+        .tvl-source {
+          font-size: 10px;
+          opacity: 0.5;
+          margin-top: 2px;
+        }
+        .item:hover .tvl-tooltip {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(-100%) translateY(-4px);
+          transition: opacity 0.18s ease 0.35s, visibility 0s linear 0.35s, transform 0.2s ease 0.35s;
+        }
+        @media (hover: none) {
+          .tvl-tooltip { display: none; }
+        }
+        @media (max-width: 500px) {
+          .tvl-tooltip { display: none; }
         }
         .chain-logo {
           width: 20px;
