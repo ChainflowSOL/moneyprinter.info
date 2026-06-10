@@ -17,6 +17,7 @@ interface NCHistoryRecord {
   timestamp: string;
 }
 
+// const NC_HISTORY_BASE = 'http://localhost:8080/nc-history';
 const NC_HISTORY_BASE = 'https://nakaflow.io/api/nc-history';
 
 const NCHistoryChart: React.FC<{ chainToken: string; chainName: string }> = ({ chainToken, chainName }) => {

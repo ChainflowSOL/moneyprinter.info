@@ -39,6 +39,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
   try {
     const [coeffsRes, tvlRes] = await Promise.allSettled([
       fetch("https://nakaflow.io/api/naka-coeffs").then((r) => r.json()),
+      // fetch("http://localhost:8080/naka-coeffs").then((r) => r.json()),
       fetchDefillamaTvl(),
     ]);
 

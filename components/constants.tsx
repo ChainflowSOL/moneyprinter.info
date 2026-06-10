@@ -1,6 +1,6 @@
 const CHAIN_DATA = new Map();
 
-export const CHAINFLOW_OPERATED = new Set(["SOL", "SUI", "MON", "STORY"]);
+export const CHAINFLOW_OPERATED = new Set(["SOL", "SUI", "MON"]);
 
 // DefiLlama chain slug per chain token, with optional tvlFallback used when
 // DefiLlama is missing/under-reports TVL (e.g. new chains, non-DeFi L1s).
@@ -132,7 +132,7 @@ CHAIN_DATA.set("SOL", {
     blockchain: "Solana",
     website: "https://solana.com/",
     remark:
-      "Most trackers calculate Solana\u2019s Nakamoto Coefficient by counting each validator node as a separate entity, which results in the commonly decentralization metrics, commonly reported ~20. In reality, many operators run multiple validators.\n\nOur methodology performs operator-level deduplication, grouping validators that share operator identity (e.g., via Keybase IDs or naming patterns) and mapping them to their parent organizations using a curated dataset.\n\nTo learn more about why operator level centralization matters, read our post on the topic: https://chainflow.io/the-layers-of-decentralization/\n\nFor Coinbase, we use the ~38M SOL publicly disclosed staked assets rather than the ~12M SOL traceable to their validator keys, as this better reflects their real stake influence. Source: https://www.coinbase.com/en-in/institutional/research-insights/resources/guides/sol-validator-report-december-2025\n\nThe table below shows the resulting superminority: the {count} entities controlling more than one-third of the network stake.",
+      "Most trackers calculate Solana\u2019s Nakamoto Coefficient by counting each validator node as a separate entity, which results in the commonly decentralization metrics, commonly reported ~20. In reality, many operators run multiple validators.\n\nOur methodology performs operator-level deduplication, grouping validators that share operator identity (e.g., via Keybase IDs or naming patterns) and mapping them to their parent organizations using a curated dataset.\n\nTo learn more about why operator level centralization matters, read our post on the topic: https://chainflow.io/the-layers-of-decentralization/\n\nFor Coinbase, we use the ~38M SOL publicly disclosed staked assets rather than the ~12M SOL traceable to their validator keys, as this better reflects their real stake influence. Source: https://www.coinbase.com/en-in/institutional/research-insights/resources/guides/sol-validator-report-december-2025\n\nHelius, Chorus One, and Bitwise are grouped as a single entity. Bitwise acquired Chorus One and stakes its SOL through a validator operated by Helius under Bitwise Onchain Solutions, placing their combined stake under common control. Source: https://x.com/Solana_SRI/status/2060390973499392001\n\nThe table below shows the resulting superminority: the {count} entities controlling more than one-third of the network stake.",
     entityDetailsEndpoint: "https://nakaflow.io/api/solana-details",
   },
   name: "Solana",
@@ -416,7 +416,6 @@ CHAIN_DATA.set("STORY", {
     website: "https://www.story.foundation/",
   },
   name: "Story Protocol",
-  stakingUrl: "https://staking.story.foundation/validators/0xb4c106a8206cf8b23ab377a4e9b779fddb9d3427",
   icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iOTIiIHZpZXdCb3g9IjAgMCA3MCA5MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTY5LjUzIDYxLjE0NTJDNjkuNTMgODAuNDYwOCA1NC4wMzcyIDkyIDM0LjkyMTIgOTJDMTUuODA1MSA5MiAyLjQ5ODgzIDgwLjU4NjIgMCA2Ni4wMzY4SDE3LjYxNjhDMTkuNTUzNCA3MS41NTU2IDI1Ljg2MjkgNzUuNTY5MiAzNC45MjEyIDc1LjU2OTJDNDQuOTc5IDc1LjU2OTIgNTIuMjI1NiA3MC40ODk0IDUyLjIyNTYgNjEuNDU4OEM1Mi4yMjU2IDUyLjQyODEgNDUuMTY2NCA0Ny43ODczIDM0Ljg1ODcgNDcuNzg3M1Y2MC41MTgxQzE1LjQzMDMgNjAuNTE4MSAwLjU2MjIzNyA0OS40ODA2IDAuNTYyMjM3IDMxLjA0MjlDMC41NjIyMzcgMTIuNjA1MyAxNC44NjggMCAzNC45ODM2IDBDNTQuMDM3MiAwIDY3LjE1NjEgMTEuMzUxMSA2OC40NjggMjUuMzM2MUg1MS40NzU5QzUwLjEwMTYgMjAuMzE5IDQ0LjU0MTcgMTYuNDkzNSAzNS4zNTg1IDE2LjQ5MzVDMjQuMTc2MiAxNi40OTM1IDE3Ljk5MTYgMjEuNjk4NyAxNy45OTE2IDMwLjU0MTJDMTcuOTkxNiAzOS4zODM4IDI1LjExMzMgNDMuNjQ4MyAzNC44NTg3IDQzLjY0ODNWMzAuMjkwNEM1NS45NzM4IDMwLjI5MDQgNjkuNTMgNDIuOTU4NCA2OS41MyA2MS4xNDUyWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg=="
 });
 
